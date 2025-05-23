@@ -1,11 +1,10 @@
 package main
 
 import (
-	"encoding/json"
 	"log"
 	"time"
 
-	"asynq-quickstart/payload"
+	"asynq-quickstart/task"
 
 	"github.com/hibiken/asynq"
 )
@@ -13,14 +12,15 @@ import (
 func main() {
 	client := asynq.NewClient(asynq.RedisClientOpt{Addr: "localhost:6379"})
 
-	// Create a task with typename and payload.
-	payload, err := json.Marshal(payload.EmailTaskPayload{UserID: 42})
+	t1, err := task.NewWelcomeEmailTask(42)
 	if err != nil {
 		log.Fatal(err)
 	}
-	t1 := asynq.NewTask("email:welcome", payload)
 
-	t2 := asynq.NewTask("email:reminder", payload)
+	t2, err := task.NewReminderEmailTask(42)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// Process the task immediately.
 	info, err := client.Enqueue(t1)
